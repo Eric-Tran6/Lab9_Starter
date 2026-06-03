@@ -1,108 +1,264 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Lab 9</title>
+		<script src="https://cdn.trackjs.com/agent/v3/latest/t.js"></script>
+		<script>
+			window.TrackJS &&
+				TrackJS.install({
+					token: "da0c6557a4854e04a383485965b9fc59",
+				});
+		</script>
 
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lab 9</title>
+		<style>
+			button {
+				margin: 3px;
+			}
 
-  <style>
-    button {
-      margin: 3px;
-    }
+			button:hover {
+				cursor: pointer;
+			}
 
-    button:hover {
-      cursor: pointer;
-    }
+			#first-num,
+			#second-num {
+				width: 60px;
+			}
 
-    #first-num,
-    #second-num {
-      width: 60px;
-    }
+			output {
+				border: 1px solid gray;
+				display: block;
+				height: 18px;
+				margin-top: 5px;
+				padding: 5px;
+				width: 240px;
+			}
 
-    output {
-      border: 1px solid gray;
-      display: block;
-      height: 18px;
-      margin-top: 5px;
-      padding: 5px;
-      width: 240px;
-    }
+			main {
+				width: 800px;
+			}
 
-    main {
-      width: 800px;
-    }
+			#error-btns {
+				column-gap: 5px;
+				display: flex;
+				flex-wrap: wrap;
+				margin-top: 30px;
+				row-gap: 5px;
+			}
 
-    #error-btns {
-      column-gap: 5px;
-      display: flex;
-      flex-wrap: wrap;
-      margin-top: 30px;
-      row-gap: 5px;
-    }
+			#error-btns > * {
+				padding: 8px 2px;
+				width: 122px;
+			}
+		</style>
+	</head>
 
-    #error-btns>* {
-      padding: 8px 2px;
-      width: 122px;
-    }
-  </style>
-</head>
+	<body>
+		<main>
+			<form>
+				<fieldset>
+					<legend>Error Calculator</legend>
+					<input name="first-num" id="first-num" />
+					<select name="operator" id="operator">
+						<option>+</option>
+						<option>-</option>
+						<option>*</option>
+						<option>/</option>
+					</select>
+					<input name="second-num" id="second-num" />
+					<button id="calculate">Calculate</button>
+					<br />
+					<output></output>
+				</fieldset>
+			</form>
 
-<body>
-  <main>
-    <form>
-      <fieldset>
-        <legend>Error Calculator</legend>
-        <input name="first-num" id="first-num" />
-        <select name="operator" id="operator">
-          <option>+</option>
-          <option>-</option>
-          <option>*</option>
-          <option>/</option>
-        </select>
-        <input name="second-num" id="second-num" />
-        <button id="calculate">Calculate</button>
-        <br />
-        <output></output>
-      </fieldset>
-    </form>
+			<section id="error-btns">
+				<button>Console Log</button>
+				<button>Console Error</button>
+				<button>Console Count</button>
+				<button>Console Warn</button>
+				<button>Console Assert</button>
+				<button>Console Clear</button>
+				<button>Console Dir</button>
+				<button>Console dirxml</button>
+				<button>Console Group Start</button>
+				<button>Console Group End</button>
+				<button>Console Table</button>
+				<button>Start Timer</button>
+				<button>End Timer</button>
+				<button>Console Trace</button>
+				<button>Trigger a Global Error</button>
+			</section>
+		</main>
 
-    <section id="error-btns">
-      <button>Console Log</button>
-      <button>Console Error</button>
-      <button>Console Count</button>
-      <button>Console Warn</button>
-      <button>Console Assert</button>
-      <button>Console Clear</button>
-      <button>Console Dir</button>
-      <button>Console dirxml</button>
-      <button>Console Group Start</button>
-      <button>Console Group End</button>
-      <button>Console Table</button>
-      <button>Start Timer</button>
-      <button>End Timer</button>
-      <button>Console Trace</button>
-      <button>Trigger a Global Error</button>
-    </section>
-  </main>
+		<script>
+			class ValidationError extends Error {
+				constructor(message) {
+					super(message);
+					this.name = "ValidationError";
+				}
+			}
 
-  <script>
-    let form = document.querySelector('form');
-    form.addEventListener('submit', e => {
-      e.preventDefault();
-      let output = document.querySelector('output');
-      let firstNum = document.querySelector('#first-num').value;
-      let secondNum = document.querySelector('#second-num').value;
-      let operator = document.querySelector('#operator').value;
-      output.innerHTML = eval(`${firstNum} ${operator} ${secondNum}`);
-    });
+			class DivisionByZeroError extends Error {
+				constructor() {
+					super("Cannot divide by zero");
+					this.name = "DivisionByZeroError";
+				}
+			}
 
-    let errorBtns = Array.from(document.querySelectorAll('#error-btns > button'));
+			window.addEventListener("error", (event) => {
+				console.log(
+					`Global error caught: "${event.message}" at ${event.filename}:${event.lineno}:${event.colno}`,
+				);
+			});
 
-    // Start your code here
-    // You may move this JS to another file if you wish
-  </script>
-</body>
+			let form = document.querySelector("form");
+			form.addEventListener("submit", (e) => {
+				e.preventDefault();
+				let output = document.querySelector("output");
+				let firstNum = document
+					.querySelector("#first-num")
+					.value.trim();
+				let secondNum = document
+					.querySelector("#second-num")
+					.value.trim();
+				let operator = document.querySelector("#operator").value;
 
+				try {
+					if (firstNum === "" || secondNum === "") {
+						throw new ValidationError(
+							"Both fields must be filled in",
+						);
+					}
+					if (isNaN(firstNum) || isNaN(secondNum)) {
+						throw new ValidationError("Inputs must be numbers");
+					}
+					if (operator === "/" && Number(secondNum) === 0) {
+						throw new DivisionByZeroError();
+					}
+					output.innerHTML = eval(
+						`${Number(firstNum)} ${operator} ${Number(secondNum)}`,
+					);
+				} catch (error) {
+					if (error instanceof DivisionByZeroError) {
+						output.innerHTML = `Error: ${error.message}`;
+						console.error(`[${error.name}] ${error.message}`);
+					} else if (error instanceof ValidationError) {
+						output.innerHTML = `Error: ${error.message}`;
+						console.error(`[${error.name}] ${error.message}`);
+					} else {
+						output.innerHTML = "Unexpected error occurred";
+						console.error(error);
+					}
+				} finally {
+					console.log("Calculation attempt complete");
+				}
+			});
+
+			let errorBtns = Array.from(
+				document.querySelectorAll("#error-btns > button"),
+			);
+
+			errorBtns[0].addEventListener("click", () => {
+				let firstNum = document.querySelector("#first-num").value;
+				let operator = document.querySelector("#operator").value;
+				let secondNum = document.querySelector("#second-num").value;
+				console.log("Current inputs:", {
+					firstNum,
+					operator,
+					secondNum,
+				});
+			});
+
+			errorBtns[1].addEventListener("click", () => {
+				console.error(
+					"Sample error: something went wrong in the calculator",
+				);
+			});
+
+			errorBtns[2].addEventListener("click", () => {
+				console.count("button-clicks");
+			});
+
+			errorBtns[3].addEventListener("click", () => {
+				let secondNum = document.querySelector("#second-num").value;
+				if (secondNum === "0") {
+					console.warn(
+						"Warning: second number is 0 — division will fail",
+					);
+				} else {
+					console.warn(
+						"Warning: make sure your inputs are valid numbers",
+					);
+				}
+			});
+
+			errorBtns[4].addEventListener("click", () => {
+				let secondNum = document.querySelector("#second-num").value;
+				let operator = document.querySelector("#operator").value;
+				console.assert(
+					!(operator === "/" && secondNum === "0"),
+					"Assertion failed: cannot divide by zero",
+				);
+				console.assert(
+					secondNum !== "",
+					"Assertion failed: second number is empty",
+				);
+			});
+
+			errorBtns[5].addEventListener("click", () => {
+				console.clear();
+			});
+
+			errorBtns[6].addEventListener("click", () => {
+				console.dir(document.querySelector("form"));
+			});
+
+			errorBtns[7].addEventListener("click", () => {
+				console.dirxml(document.querySelector("form"));
+			});
+
+			errorBtns[8].addEventListener("click", () => {
+				let firstNum = document.querySelector("#first-num").value;
+				let operator = document.querySelector("#operator").value;
+				let secondNum = document.querySelector("#second-num").value;
+				console.group("Calculator Debug");
+				console.log("First number:", firstNum);
+				console.log("Operator:", operator);
+				console.log("Second number:", secondNum);
+			});
+
+			errorBtns[9].addEventListener("click", () => {
+				console.groupEnd();
+			});
+
+			errorBtns[10].addEventListener("click", () => {
+				let firstNum = document.querySelector("#first-num").value;
+				let operator = document.querySelector("#operator").value;
+				let secondNum = document.querySelector("#second-num").value;
+				console.table([{ firstNum, operator, secondNum }]);
+			});
+
+			errorBtns[11].addEventListener("click", () => {
+				console.time("calc-timer");
+			});
+
+			errorBtns[12].addEventListener("click", () => {
+				console.timeEnd("calc-timer");
+			});
+
+			errorBtns[13].addEventListener("click", () => {
+				console.trace("Trace from Console Trace button click");
+			});
+
+			errorBtns[14].addEventListener("click", () => {
+				window.TrackJS && TrackJS.track("Testing TrackJS!");
+				setTimeout(() => {
+					null.triggerGlobalError();
+				}, 0);
+			});
+		</script>
+	</body>
 </html>
